@@ -7,7 +7,7 @@
         <rect :x="_options.dragger.radius" :y="_posY" :width="(_width-_options.dragger.radius*2)*newValue" :height="_options.track.thickness" :fill="_options.track.fill" :rx="_options.track.cornerRadius" />
     </g>
 
-    <circle :cx="_options.dragger.radius+(_width-_options.dragger.radius*2)*newValue" :cy="_options.dragger.radius" :r="_options.dragger.radius-_options.dragger.strokeWidth/2" :fill="_options.dragger.fill" :stroke="_options.dragger.stroke" :stroke-width="_options.dragger.strokeWidth" cursor="pointer" @mousedown="mouseDown = true" @mouseup="mouseDown = false" :disabled="!_options.value.tooltip.show" v-b-tooltip.hover.dark :title="`${_range}${_options.value.tooltip.unit}`" />
+    <circle id="dragger" :class="mouseDown ? 'active' : ''" :cx="_options.dragger.radius+(_width-_options.dragger.radius*2)*newValue" :cy="_options.dragger.radius" :r="_options.dragger.radius-_options.dragger.strokeWidth/2" :fill="_options.dragger.fill" :stroke="_options.dragger.stroke" :stroke-width="_options.dragger.strokeWidth" cursor="pointer" @mousedown="mouseDown = true" @mouseup="mouseDown = false" :disabled="!_options.value.tooltip.show" v-b-tooltip.hover.dark :title="`${_range}${_options.value.tooltip.unit}`" />
 </svg>
 </template>
 
@@ -30,21 +30,20 @@ export default {
             defaultOptions: {
                 dragger: {
                     radius: 10,
-                    fill: "#E91E63",
+                    fill: "#007bff",
                     stroke: "white",
                     strokeWidth: 2,
                 },
                 track: {
-                    thickness: 5,
+                    thickness: 8,
                     cornerRadius: 3,
-                    background: "#6A6A6AAA",
-                    fill: "#E91E63"
+                    background: "#cccccc",
+                    fill: "#007bff"
                 },
                 value: {
                     min: 0,
                     max: 100,
                     step: 1,
-                    startAt: 50,
                     tooltip: {
                         show: true,
                         unit: "%",
@@ -133,4 +132,8 @@ export default {
 </script>
 
 <style scoped>
+    #dragger.active {
+        filter: brightness(3) saturate(.2) drop-shadow(0 0 4px black);
+        transition: filter .2s;
+    }
 </style>
