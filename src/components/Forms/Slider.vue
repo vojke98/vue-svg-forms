@@ -1,8 +1,8 @@
 <template>
-<svg ref="slider" shape-rendering="geometricPrecision" :width="_width" :height="_options.dragger.radius*2" @mouseleave="mouseOn = false" @mouseup="mouseDown = false" @mousemove="handleMouseMove">
+<svg ref="slider" shape-rendering="geometricPrecision" :width="_width" :height="_options.dragger.radius*2" @mouseup="mouseDown = false" style="overflow: visible">
     <rect width="100%" height="100%" fill="black" fill-opacity="0" />
 
-    <g @mousedown="handleClick" @mouseup="mouseDown = false">
+    <g @mousedown="handleClick">
         <rect ref="tracker" :x="_options.dragger.radius" :y="_posY" :width="_width-(_options.dragger.radius*2)" :height="_options.track.thickness" :fill="_options.track.background" :rx="_options.track.cornerRadius" />
         <rect :x="_options.dragger.radius" :y="_posY" :width="(_width-_options.dragger.radius*2)*newValue" :height="_options.track.thickness" :fill="_options.track.fill" :rx="_options.track.cornerRadius" />
     </g>
@@ -127,13 +127,20 @@ export default {
         const sliderBound = this.slider.getBoundingClientRect();
         const trackerBound = this.tracker.getBoundingClientRect();
         this.offset = trackerBound.left - sliderBound.left;
+
+        document.addEventListener('click', () => this.mouseDown = false);
+        document.addEventListener('mousemove', e => this.handleMouseMove(e));
+    },
+    destroyed() {
+        document.removeEventListener('click', () => this.mouseDown = false);
+        document.removeEventListener('mousemove', e => this.handleMouseMove(e));
     }
 }
 </script>
 
 <style scoped>
-    #dragger.active {
-        filter: brightness(3) saturate(.2) drop-shadow(0 0 4px black);
-        transition: filter .2s;
-    }
+#dragger.active {
+    filter: brightness(3) saturate(.2) drop-shadow(0 0 2px black);
+    transition: filter .2s;
+}
 </style>
