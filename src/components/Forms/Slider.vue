@@ -7,7 +7,7 @@
         <rect :x="_options.dragger.radius" :y="_posY" :width="(_width-_options.dragger.radius*2)*_normalizedValue" :height="_options.track.thickness" :fill="_options.track.fill" :rx="_options.track.cornerRadius" />
     </g>
 
-    <circle id="dragger" :class="mouseDown ? 'active' : ''" :cx="_options.dragger.radius+(_width-_options.dragger.radius*2)*_normalizedValue" :cy="_options.dragger.radius" :r="_options.dragger.radius-_options.dragger.strokeWidth/2" :fill="_options.dragger.fill" :stroke="_options.dragger.stroke" :stroke-width="_options.dragger.strokeWidth" cursor="pointer" @mousedown="mouseDown = true" @mouseup="mouseDown = false" :disabled="!_options.value.tooltip.show" v-b-tooltip.hover.dark :title="`${value}${_options.value.tooltip.unit}`" />
+    <circle id="dragger" :class="mouseDown ? 'active' : ''" :cx="_options.dragger.radius+(_width-_options.dragger.radius*2)*_normalizedValue" :cy="_options.dragger.radius" :r="_options.dragger.radius-_options.dragger.strokeWidth/2" :fill="_options.dragger.fill" :stroke="_options.dragger.stroke" :stroke-width="_options.dragger.strokeWidth" cursor="pointer" @mousedown="mouseDown = true" @mouseup="mouseDown = false" :disabled="!_options.value.tooltip.show" v-b-tooltip.hover.dark :title="`${(value || 0).toFixed(_options.value.tooltip.decimals)}${_options.value.tooltip.unit}`" />
 </svg>
 </template>
 
