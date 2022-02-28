@@ -4,14 +4,16 @@
 
     <g @mousedown="handleClick">
         <rect ref="tracker" :x="_options.dragger.radius" :y="_posY" :width="_width-(_options.dragger.radius*2)" :height="_options.track.thickness" :fill="_options.track.background" :rx="_options.track.cornerRadius" />
-        <rect :x="_options.dragger.radius" :y="_posY" :width="(_width-_options.dragger.radius*2)*newValue" :height="_options.track.thickness" :fill="_options.track.fill" :rx="_options.track.cornerRadius" />
+        <rect :x="_options.dragger.radius" :y="_posY" :width="(_width-_options.dragger.radius*2)*_normalizedValue" :height="_options.track.thickness" :fill="_options.track.fill" :rx="_options.track.cornerRadius" />
     </g>
 
-    <circle id="dragger" :class="mouseDown ? 'active' : ''" :cx="_options.dragger.radius+(_width-_options.dragger.radius*2)*newValue" :cy="_options.dragger.radius" :r="_options.dragger.radius-_options.dragger.strokeWidth/2" :fill="_options.dragger.fill" :stroke="_options.dragger.stroke" :stroke-width="_options.dragger.strokeWidth" cursor="pointer" @mousedown="mouseDown = true" @mouseup="mouseDown = false" :disabled="!_options.value.tooltip.show" v-b-tooltip.hover.dark :title="`${_range}${_options.value.tooltip.unit}`" />
+    <circle id="dragger" :class="mouseDown ? 'active' : ''" :cx="_options.dragger.radius+(_width-_options.dragger.radius*2)*_normalizedValue" :cy="_options.dragger.radius" :r="_options.dragger.radius-_options.dragger.strokeWidth/2" :fill="_options.dragger.fill" :stroke="_options.dragger.stroke" :stroke-width="_options.dragger.strokeWidth" cursor="pointer" @mousedown="mouseDown = true" @mouseup="mouseDown = false" :disabled="!_options.value.tooltip.show" v-b-tooltip.hover.dark :title="`${value}${_options.value.tooltip.unit}`" />
 </svg>
 </template>
 
 <script>
+import { mergeObjects } from '../../helpers/mergeObjects.js';
+
 export default {
     name: 'Slider',
     props: {
@@ -19,11 +21,7 @@ export default {
             type: [String, Number],
             default: 100
         },
-        options: Object,
-        value: {
-            type: Number,
-            default: 0
-        }
+        options: Object
     },
     data() {
         return {
@@ -54,7 +52,7 @@ export default {
 
             mouseDown: false,
             mouseOn: false,
-            newValue: 0,
+            value: undefined,
             slider: undefined,
             tracker: undefined,
             offset: undefined,
@@ -65,16 +63,16 @@ export default {
             return Number(this.width);
         },
         _options() {
-            const obj = this.mergeObjects(this.defaultOptions, this.options);
+            const obj = mergeObjects.deep(this.defaultOptions, this.options);
             return obj;
         },
         _posY() {
             return this._options.dragger.radius - (this._options.track.thickness / 2);
         },
-        _range() {
+        _normalizedValue() {
             const max = this._options.value.max;
             const min = this._options.value.min;
-            return (this.newValue * (max - min) + min).toFixed(this._options.value.tooltip.decimals);
+            return this.value ? (this.value - min) / (max - min) : 0;
         }
     },
     methods: {
@@ -91,33 +89,13 @@ export default {
 
                 let p = (x - this.offset) / (w - this.offset * 2);
                 p = p < 0 ? 0 : (p > 1 ? 1 : p);
-                const step = this._options.value.step / (this._options.value.max - this._options.value.min);
-                if (Math.abs(this.newValue - p) >= step / 2) this.newValue = Math.ceil(p / step) * step;
-            }
-        },
-        isObject(item) {
-            return (item && typeof item === 'object' && !Array.isArray(item));
-        },
-        mergeObjects(target, ...sources) {
-            if (!sources.length) return target;
-            const source = sources.shift();
 
-            if (this.isObject(target) && this.isObject(source)) {
-                for (const key in source) {
-                    if (this.isObject(source[key])) {
-                        if (!target[key]) Object.assign(target, {
-                            [key]: {}
-                        });
-                        this.mergeObjects(target[key], source[key]);
-                    } else {
-                        Object.assign(target, {
-                            [key]: source[key]
-                        });
-                    }
-                }
+                const max = this._options.value.max;
+                const min = this._options.value.min;
+                p = p * (max - min) + min;
+                const step = this._options.value.step // (this._options.value.max - this._options.value.min);
+                if (Math.abs(this.value - p) >= step / 2) this.value = Math.ceil(p / step) * step;
             }
-
-            return this.mergeObjects(target, ...sources);
         }
     },
     mounted() {
@@ -127,6 +105,8 @@ export default {
         const sliderBound = this.slider.getBoundingClientRect();
         const trackerBound = this.tracker.getBoundingClientRect();
         this.offset = trackerBound.left - sliderBound.left;
+
+        this.value = this._options.value.min;
 
         document.addEventListener('click', () => this.mouseDown = false);
         document.addEventListener('mousemove', e => this.handleMouseMove(e));
